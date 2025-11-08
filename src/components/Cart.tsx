@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { getCart, updateCartItemQuantity, removeFromCart, getCartTotal } from '../lib/cart';
-import { CartItem } from '../lib/supabase';
+import { CartItem } from '../lib/firebase';
 
 interface CartProps {
   isOpen: boolean;

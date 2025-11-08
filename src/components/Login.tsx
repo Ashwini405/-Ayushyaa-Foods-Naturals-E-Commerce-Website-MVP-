@@ -60,7 +60,7 @@ export default function Login({ isOpen, onClose, onSwitchToSignup }: LoginProps)
 
         <div className="p-6">
           <div className="flex justify-center mb-8">
-            <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-28 w-auto object-contain" />
+            <img src="/logo.png" alt="Ayushyaa Foods & Naturals" className="h-28 w-auto object-contain" />
           </div>
 
           {error && (

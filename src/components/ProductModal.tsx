@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
-import { ProductWithVariants } from '../lib/supabase';
+import { ProductWithVariants } from '../lib/firebase';
 import { addToCart } from '../lib/cart';
 
 interface ProductModalProps {
@@ -58,7 +58,7 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
               Select Size/Weight
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {product.variants.map((variant) => (
+              {product.variants.map((variant: { id: string; weight: string; price: number; stock: number; is_active: boolean; product_id: string }) => (
                 <button
                   key={variant.id}
                   onClick={() => setSelectedVariant(variant)}

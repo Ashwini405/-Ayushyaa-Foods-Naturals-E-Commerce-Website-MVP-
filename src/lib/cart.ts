@@ -1,4 +1,4 @@
-import { CartItem } from './supabase';
+import { CartItem } from './firebase';
 
 const CART_KEY = 'ayushyaa_cart';
 

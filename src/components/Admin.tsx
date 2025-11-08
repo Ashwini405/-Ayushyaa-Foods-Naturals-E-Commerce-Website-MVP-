@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { db, ProductWithVariants } from '../lib/firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
-import { LogOut, Plus, Edit2, Trash2, Home, Package } from 'lucide-react';
+import { db, ProductWithVariants, uploadProductImage } from '../lib/firebase';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { LogOut, Plus, Edit2, Trash2, Home, Package, Upload } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -28,6 +28,9 @@ export default function Admin() {
     price: 0,
     stock: 100,
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [productsLoading, setProductsLoading] = useState(true);
   const { user, isAuthenticated, logout } = useAuth();
@@ -140,6 +143,32 @@ export default function Admin() {
     navigate('/');
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    setSelectedImage(null);
+    setImagePreview('');
+    setFormData({ ...formData, image_url: '' });
+  };
+
   if (!isAuthenticated || user?.role !== 'admin') {
     return null;
   }
@@ -149,11 +178,33 @@ export default function Admin() {
     setLoading(true);
 
     try {
+      let imageUrl = formData.image_url;
+      
+      if (selectedImage) {
+        setUploadingImage(true);
+        try {
+          imageUrl = await uploadProductImage(selectedImage);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          alert('Failed to upload image. Please try again.');
+          setLoading(false);
+          setUploadingImage(false);
+          return;
+        }
+        setUploadingImage(false);
+      }
+
+      if (!imageUrl) {
+        alert('Please provide a product image');
+        setLoading(false);
+        return;
+      }
+
       const docRef = await addDoc(collection(db, 'products'), {
         name: formData.name,
         slug: formData.slug,
         description: formData.description,
-        image_url: formData.image_url,
+        image_url: imageUrl,
         base_price: formData.base_price,
         category_id: formData.category_id,
         is_active: formData.is_active,
@@ -183,6 +234,8 @@ export default function Admin() {
         price: 0,
         stock: 100,
       });
+      setSelectedImage(null);
+      setImagePreview('');
       loadProducts();
       setActiveTab('view');
     } catch (error) {
@@ -207,6 +260,8 @@ export default function Admin() {
       price: product.variants[0]?.price || 0,
       stock: product.variants[0]?.stock || 100,
     });
+    setSelectedImage(null);
+    setImagePreview('');
     setActiveTab('edit');
   };
 
@@ -216,12 +271,28 @@ export default function Admin() {
 
     setLoading(true);
     try {
+      let imageUrl = formData.image_url;
+      
+      if (selectedImage) {
+        setUploadingImage(true);
+        try {
+          imageUrl = await uploadProductImage(selectedImage);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          alert('Failed to upload image. Please try again.');
+          setLoading(false);
+          setUploadingImage(false);
+          return;
+        }
+        setUploadingImage(false);
+      }
+
       const productRef = doc(db, 'products', selectedProduct.id);
       await updateDoc(productRef, {
         name: formData.name,
         slug: formData.slug,
         description: formData.description,
-        image_url: formData.image_url,
+        image_url: imageUrl,
         base_price: formData.base_price,
         category_id: formData.category_id,
         is_active: formData.is_active,
@@ -251,6 +322,8 @@ export default function Admin() {
         price: 0,
         stock: 100,
       });
+      setSelectedImage(null);
+      setImagePreview('');
       loadProducts();
       setActiveTab('view');
     } catch (error) {
@@ -302,7 +375,7 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-16 w-auto object-contain" />
+              <img src="/logo.png" alt="Ayushyaa Foods & Naturals" className="h-16 w-auto object-contain" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
               </div>
@@ -504,18 +577,62 @@ export default function Admin() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Image URL *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9FC98D] focus:border-transparent"
-                  placeholder="https://..."
-                />
-                {formData.image_url && (
-                  <img src={formData.image_url} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
-                )}
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Product Image *</label>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center justify-center px-4 py-2 bg-[#9FC98D] text-white rounded-lg cursor-pointer hover:bg-[#8BB87C] transition">
+                      <Upload className="w-4 h-4 mr-2" />
+                      <span>Upload Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                    {(imagePreview || formData.image_url) && (
+                      <button
+                        type="button"
+                        onClick={clearImage}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
+                      >
+                        Clear Image
+                      </button>
+                    )}
+                  </div>
+
+                  {uploadingImage && (
+                    <div className="flex items-center space-x-2 text-[#9FC98D]">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#9FC98D]"></div>
+                      <span className="text-sm">Uploading image...</span>
+                    </div>
+                  )}
+
+                  {(imagePreview || formData.image_url) && (
+                    <div>
+                      <img 
+                        src={imagePreview || formData.image_url} 
+                        alt="Preview" 
+                        className="w-48 h-48 object-cover rounded-lg border-2 border-gray-200" 
+                      />
+                    </div>
+                  )}
+
+                  <div className="text-xs text-gray-500">
+                    <p>• Supported formats: JPG, PNG, GIF, WebP</p>
+                    <p>• Maximum size: 5MB</p>
+                    <p>• Recommended: Square images (1:1 ratio)</p>
+                  </div>
+
+                  {!selectedImage && !formData.image_url && (
+                    <input
+                      type="hidden"
+                      required
+                      value={formData.image_url}
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

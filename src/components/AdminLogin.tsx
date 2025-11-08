@@ -52,7 +52,7 @@ export default function AdminLogin() {
 
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8">
         <div className="flex justify-center mb-8">
-          <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-32 w-auto object-contain" />
+          <img src="/logo.png" alt="Ayushyaa Foods & Naturals" className="h-32 w-auto object-contain" />
         </div>
 
         <h2 className="text-3xl font-bold text-gray-900 text-center mb-6">Admin Login</h2>

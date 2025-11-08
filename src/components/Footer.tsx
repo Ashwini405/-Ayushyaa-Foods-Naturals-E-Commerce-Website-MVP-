@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="mb-4 bg-white rounded-lg p-3 inline-block">
-              <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-20 w-auto object-contain" />
+              <img src="/logo.png" alt="Ayushyaa Foods & Naturals" className="h-20 w-auto object-contain" />
             </div>
             <p className="text-sm italic text-gray-400 mb-4">Back to Roots – 100% Natural</p>
             <p className="text-sm text-gray-400">

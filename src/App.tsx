@@ -10,7 +10,7 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import { db, ProductWithVariants } from './lib/firebase';
-import { collection, getDocs, query, where, orderBy, addDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, addDoc } from "firebase/firestore";
 
 function App() {
   const [products, setProducts] = useState<ProductWithVariants[]>([]);
