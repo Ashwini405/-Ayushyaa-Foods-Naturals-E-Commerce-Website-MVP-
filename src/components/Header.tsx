@@ -33,7 +33,7 @@ export default function Header({ onCartClick, onLoginClick }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <a href="/" className="flex items-center">
-              <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-16 md:h-20 w-auto object-contain" />
+              <img src="./assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-16 md:h-20 w-auto object-contain" />
             </a>
           </div>
 
