@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,26 +51,17 @@ export default function AdminLogin() {
       </div>
 
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8">
-        <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-[#9FC98D] rounded-full flex items-center justify-center">
-            <Shield className="w-10 h-10 text-white" />
-          </div>
+        <div className="flex justify-center mb-8">
+          <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-32 w-auto object-contain" />
         </div>
 
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-2">Admin Login</h2>
-        <p className="text-gray-600 text-center mb-6">Ayushyaa Foods & Naturals</p>
+        <h2 className="text-3xl font-bold text-gray-900 text-center mb-6">Admin Login</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
             {error}
           </div>
         )}
-
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-          <p className="font-semibold mb-2">Default Admin Credentials:</p>
-          <p>Username: <span className="font-mono bg-white px-2 py-1 rounded">admin</span></p>
-          <p className="mt-1">Password: <span className="font-mono bg-white px-2 py-1 rounded">admin</span></p>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

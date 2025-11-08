@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { db, ProductWithVariants } from '../lib/firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
-import { Shield, LogOut, Plus, Edit2, Trash2, Home, Package } from 'lucide-react';
+import { LogOut, Plus, Edit2, Trash2, Home, Package } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -51,7 +51,30 @@ export default function Admin() {
         name: doc.data().name,
         slug: doc.data().slug,
       }));
-      setCategories(categoriesList);
+      
+      if (categoriesList.length === 0) {
+        await addDoc(collection(db, 'categories'), {
+          name: 'Foods',
+          slug: 'foods',
+          description: 'Natural food products and nutrition',
+          created_at: new Date().toISOString()
+        });
+        await addDoc(collection(db, 'categories'), {
+          name: 'Naturals',
+          slug: 'naturals',
+          description: 'Natural personal care and herbal products',
+          created_at: new Date().toISOString()
+        });
+        const newSnapshot = await getDocs(categoriesCol);
+        const newList = newSnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name,
+          slug: doc.data().slug,
+        }));
+        setCategories(newList);
+      } else {
+        setCategories(categoriesList);
+      }
     } catch (error) {
       console.error('Error loading categories:', error);
     }
@@ -76,12 +99,19 @@ export default function Admin() {
       const categoriesSnapshot = await getDocs(categoriesCol);
       const categoriesMap = new Map();
       categoriesSnapshot.docs.forEach(doc => {
-        categoriesMap.set(doc.id, { id: doc.id, ...doc.data() });
+        const catData = doc.data();
+        categoriesMap.set(doc.id, { 
+          id: doc.id, 
+          name: catData.name || 'Uncategorized',
+          slug: catData.slug || 'uncategorized',
+          description: catData.description || '',
+          created_at: catData.created_at || ''
+        });
       });
 
       const productsWithDetails = await Promise.all(
         productList.map(async (product) => {
-          const category = categoriesMap.has(product.category_id)
+          const category = product.category_id && categoriesMap.has(product.category_id)
             ? categoriesMap.get(product.category_id)
             : { id: '', name: 'Uncategorized', slug: 'uncategorized', description: '', created_at: '' };
 
@@ -272,12 +302,9 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-[#9FC98D] rounded-full flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
+              <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-16 w-auto object-contain" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-                <p className="text-xs text-gray-500">Ayushyaa Foods & Naturals</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -384,7 +411,7 @@ export default function Admin() {
                           <div className="text-xs text-gray-500">{product.slug}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-700">{product.category.name}</span>
+                          <span className="text-sm text-gray-700">{product.category?.name || 'No Category'}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-semibold text-gray-900">₹{product.base_price}</span>

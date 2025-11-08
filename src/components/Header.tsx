@@ -32,14 +32,8 @@ export default function Header({ onCartClick, onLoginClick }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <a href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-[#9FC98D] rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Ayushyaa</h1>
-                <p className="text-xs text-gray-500">Foods & Naturals</p>
-              </div>
+            <a href="/" className="flex items-center">
+              <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-16 md:h-20 w-auto object-contain" />
             </a>
           </div>
 

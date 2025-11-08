@@ -10,7 +10,7 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import { db, ProductWithVariants } from './lib/firebase';
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, addDoc } from "firebase/firestore";
 
 function App() {
   const [products, setProducts] = useState<ProductWithVariants[]>([]);
@@ -28,6 +28,37 @@ function App() {
 
   const loadProducts = async () => {
     try {
+      const categoriesCol = collection(db, "categories");
+      let categoriesSnapshot = await getDocs(categoriesCol);
+      
+      if (categoriesSnapshot.empty) {
+        await addDoc(collection(db, 'categories'), {
+          name: 'Foods',
+          slug: 'foods',
+          description: 'Natural food products and nutrition',
+          created_at: new Date().toISOString()
+        });
+        await addDoc(collection(db, 'categories'), {
+          name: 'Naturals',
+          slug: 'naturals',
+          description: 'Natural personal care and herbal products',
+          created_at: new Date().toISOString()
+        });
+        categoriesSnapshot = await getDocs(categoriesCol);
+      }
+
+      const categoriesMap = new Map();
+      categoriesSnapshot.docs.forEach(doc => {
+        const catData = doc.data();
+        categoriesMap.set(doc.id, { 
+          id: doc.id, 
+          name: catData.name || 'Uncategorized',
+          slug: catData.slug || 'uncategorized',
+          description: catData.description || '',
+          created_at: catData.created_at || ''
+        });
+      });
+
       const productsCol = collection(db, "products");
       const q = query(productsCol, where("is_active", "==", true));
       const productSnapshot = await getDocs(q);
@@ -41,22 +72,12 @@ function App() {
         } as unknown as ProductWithVariants;
       });
 
-      // Fetch all categories once
-      const categoriesCol = collection(db, "categories");
-      const categoriesSnapshot = await getDocs(categoriesCol);
-      const categoriesMap = new Map();
-      categoriesSnapshot.docs.forEach(doc => {
-        categoriesMap.set(doc.id, { id: doc.id, ...doc.data() });
-      });
-
       const productsWithDetails = await Promise.all(
         productList.map(async (product) => {
-          // Match category
-          const category = categoriesMap.has(product.category_id)
+          const category = product.category_id && categoriesMap.has(product.category_id)
             ? categoriesMap.get(product.category_id)
             : { id: '', name: 'Uncategorized', slug: 'uncategorized', description: '', created_at: '' };
 
-          // Fetch variants
           const variantsCol = collection(db, `products/${product.id}/variants`);
           const variantSnapshot = await getDocs(variantsCol);
           const variants = variantSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
@@ -79,10 +100,10 @@ function App() {
 
   const filteredProducts = activeCategory === 'all'
     ? products
-    : products.filter((p) => p.category.slug === activeCategory);
+    : products.filter((p) => p.category?.slug?.toLowerCase() === activeCategory.toLowerCase());
 
-  const foodsCount = products.filter((p) => p.category.slug === 'foods').length;
-  const naturalsCount = products.filter((p) => p.category.slug === 'naturals').length;
+  const foodsCount = products.filter((p) => p.category?.slug?.toLowerCase() === 'foods').length;
+  const naturalsCount = products.filter((p) => p.category?.slug?.toLowerCase() === 'naturals').length;
 
   return (
     <div className="min-h-screen bg-[#F8F8F3]">

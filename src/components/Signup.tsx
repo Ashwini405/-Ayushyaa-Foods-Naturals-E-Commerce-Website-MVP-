@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Leaf } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface SignupProps {
@@ -76,10 +76,8 @@ export default function Signup({ isOpen, onClose, onSwitchToLogin }: SignupProps
         </div>
 
         <div className="p-6">
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-[#9FC98D] rounded-full flex items-center justify-center">
-              <Leaf className="w-8 h-8 text-white" />
-            </div>
+          <div className="flex justify-center mb-8">
+            <img src="/assets/logo.png" alt="Ayushyaa Foods & Naturals" className="h-28 w-auto object-contain" />
           </div>
 
           {error && (
